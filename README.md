@@ -1,5 +1,8 @@
 # iKhokha Tech Check
 
+> **Note**
+Please do not make a public fork of this repository
+
 ### Customer Review Analyzer
 ---
 ### Introduction
