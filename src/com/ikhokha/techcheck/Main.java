@@ -33,7 +33,10 @@ public class Main {
 	private static void addReportResults(Map<String, Integer> source, Map<String, Integer> target) {
 
 		for (Map.Entry<String, Integer> entry : source.entrySet()) {
-			target.put(entry.getKey(), entry.getValue());
+			if(target.get(entry.getKey())!= null)
+				target.put(entry.getKey(), entry.getValue() + target.get(entry.getKey()));
+			else
+				target.put(entry.getKey(), entry.getValue());
 		}
 		
 	}
