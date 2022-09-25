@@ -1,9 +1,9 @@
 package com.ikhokha.techcheck;
 
 public class Report {
-	public int Shorter;
-    public int Movers;
-    public int Shakers;
-    public int Questions;
-    public int Spam;
+	public long Shorter;
+    public long Movers;
+    public long Shakers;
+    public long Questions;
+    public long Spam;
 }

@@ -4,9 +4,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class CommentAnalyzer {
 	
@@ -16,55 +16,30 @@ public class CommentAnalyzer {
 		this.file = file;
 	}
 	
-	public Map<String, Integer> analyze() {
-		
-		Map<String, Integer> resultsMap = new HashMap<>();
-		
-		try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-			
-			String line = null;
-			while ((line = reader.readLine()) != null) {
-				
-				if (line.length() < 15) {
-					
-					incOccurrence(resultsMap, "SHORTER_THAN_15");
+	public Callable<Report> analyze = ()  -> {
+		Report report = new Report();
+		try {
+			try (var reader = new BufferedReader(new FileReader(file))) {
+				var lines = reader.lines().collect(Collectors.toList());
 
-				} 
-				
-				if (line.toLowerCase().contains("mover")) {
+				long shortComments = lines.stream().filter(line -> line.length() < 15).count();
+				long movers = lines.stream().filter(line -> line.toLowerCase().contains("mover")).count();
+				long shakers = lines.stream().filter(line -> line.toLowerCase().contains("shaker")).count();
+				long questions = lines.stream().filter(line -> line.contains("?")).count();
 
-					incOccurrence(resultsMap, "MOVER_MENTIONS");
-				
-				}
-				
-				if (line.toLowerCase().contains("shaker")) {
+				var rgx = Pattern.compile("https?://(www\\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)", Pattern.CASE_INSENSITIVE);
+				long spam = lines.stream().filter(line -> rgx.matcher(line).find()).count();
 
-					incOccurrence(resultsMap, "SHAKER_MENTIONS");
-				
-				}
+				report.Shorter = shortComments;
+				report.Shakers = shakers;
+				report.Movers = movers;
+				report.Questions = questions;
+				report.Spam = spam;
 			}
-			
 		} catch (FileNotFoundException e) {
-			System.out.println("File not found: " + file.getAbsolutePath());
-			e.printStackTrace();
-		} catch (IOException e) {
-			System.out.println("IO Error processing file: " + file.getAbsolutePath());
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 		}
-		
-		return resultsMap;
-		
-	}
-	
-	/**
-	 * This method increments a counter by 1 for a match type on the countMap. Uninitialized keys will be set to 1
-	 * @param countMap the map that keeps track of counts
-	 * @param key the key for the value to increment
-	 */
-	private void incOccurrence(Map<String, Integer> countMap, String key) {
-		
-		countMap.putIfAbsent(key, 0);
-		countMap.put(key, countMap.get(key) + 1);
-	}
+		return report;
+	};
 
 }
